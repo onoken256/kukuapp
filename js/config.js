@@ -11,7 +11,7 @@
 // デプロイ手順は `スプレッドシート作成プロンプト.md` を見てください。
 // ─────────────────────────────────────────────────────────────
 
-export const GAS_URL = '';
+export const GAS_URL = 'https://script.google.com/macros/s/AKfycbzhnBNuLhYckQs3cVgorrx7v6NDygCGORuwCXrftuqr20WVMIRuqJfWzn5LW9py3o9C/exec';
 
 /** 通信をあきらめるまでの時間（ms）。学校のWi-Fiが遅いときの保険 */
 export const FETCH_TIMEOUT_MS = 12000;

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<!-- ダブルタップ拡大とピンチ拡大をとめる（誤操作ぼうし） -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="九九チャレンジ">
+<meta name="theme-color" content="#1d4ed8">
+<title>九九チャレンジ</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/icon-180.png">
+<link rel="icon" href="./icons/icon-192.png">
+<link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+<!-- ═══ 横向き案内 ═══ -->
+<div id="orientation-overlay" hidden>
+  <div class="oo-inner">
+    <div class="oo-icon">📱↻</div>
+    <p class="oo-text">がめんを よこむきに してね</p>
+  </div>
+</div>
+
+<main id="app">
+
+  <!-- ═══ プロフィール選択 ═══ -->
+  <section id="screen-profile" class="screen" hidden>
+    <header class="screen-head">
+      <h1>だれが やるのかな？</h1>
+    </header>
+    <div class="screen-body">
+      <div id="profile-list" class="profile-list"></div>
+      <div id="profile-error" class="profile-error" hidden>
+        <p id="profile-error-text"></p>
+        <button id="profile-retry" type="button" class="btn-primary">もういちど よみこむ</button>
+      </div>
+    </div>
+    <footer class="screen-foot">
+      <div id="profile-add-row" class="add-row">
+        <input id="profile-name" type="text" inputmode="text" maxlength="12"
+               placeholder="なまえ" autocomplete="off" autocapitalize="off">
+        <button id="profile-add" type="button" class="btn-primary">ついか</button>
+      </div>
+      <p id="profile-hint" class="hint"></p>
+    </footer>
+  </section>
+
+  <!-- ═══ ホーム ═══ -->
+  <section id="screen-home" class="screen" hidden>
+    <header class="screen-head home-head">
+      <h1 class="app-title">九九チャレンジ</h1>
+      <button id="home-name-btn" type="button" class="name-chip">
+        <span id="home-name">（だれ？）</span>
+        <span class="name-sub">かえる</span>
+      </button>
+    </header>
+    <div class="screen-body home-body">
+      <button id="home-start" type="button" class="big-card big-card-main">
+        <span class="bc-emoji">✏️</span>
+        <span class="bc-title">一問一答！九九チャレンジ</span>
+        <span class="bc-sub">1もんずつ こたえよう</span>
+      </button>
+      <button id="home-grid" type="button" class="big-card">
+        <span class="bc-emoji">🔲</span>
+        <span class="bc-title">九九マス計算</span>
+        <span class="bc-sub">81マスを ぜんぶ うめよう</span>
+      </button>
+      <button id="home-sort" type="button" class="big-card">
+        <span class="bc-emoji">🃏</span>
+        <span class="bc-title">九九ならべ</span>
+        <span class="bc-sub">カードを じゅんばんに ならべよう</span>
+      </button>
+      <button id="home-heatmap" type="button" class="big-card big-card-wide">
+        <span class="bc-emoji">🔢</span>
+        <span class="bc-title">九九表</span>
+        <span class="bc-sub">できたところを 見てみよう</span>
+      </button>
+    </div>
+    <footer class="screen-foot home-foot">
+      <button id="mute-btn" type="button" class="btn-ghost">🔊 おと あり</button>
+      <button id="gear" type="button" class="gear" aria-label="せんせいメニュー（ながおし）">⚙</button>
+    </footer>
+  </section>
+
+  <!-- ═══ レベル選択 ═══ -->
+  <section id="screen-level" class="screen" hidden>
+    <header class="screen-head">
+      <button id="level-back" type="button" class="btn-back">◀ もどる</button>
+      <h1>レベルを えらんでね</h1>
+    </header>
+    <div class="screen-body">
+      <div id="level-list" class="level-list"></div>
+    </div>
+  </section>
+
+  <!-- ═══ 段の選択 ═══ -->
+  <section id="screen-dan" class="screen" hidden>
+    <header class="screen-head">
+      <button id="dan-back" type="button" class="btn-back">◀ もどる</button>
+      <h1 id="dan-title">だんを えらんでね</h1>
+      <span id="dan-level" class="head-chip"></span>
+    </header>
+    <div class="screen-body">
+      <div id="dan-list" class="dan-list"></div>
+    </div>
+    <footer class="screen-foot dan-foot">
+      <span class="dan-counter">えらんだ かず：<strong id="dan-count">0 / 1</strong></span>
+      <button id="dan-start" type="button" class="btn-primary btn-big" disabled>はじめる</button>
+    </footer>
+  </section>
+
+  <!-- ═══ プレイ ═══ -->
+  <section id="screen-play" class="screen" hidden>
+    <!-- のこり時間バー（画面いちばん上を よこぎる） -->
+    <div id="time-bar-wrap" class="time-bar-wrap">
+      <div id="time-bar" class="time-bar"></div>
+    </div>
+
+    <div class="play-body">
+      <div class="play-left">
+        <div class="play-status">
+          <span id="play-level" class="head-chip"></span>
+          <span id="play-progress" class="play-progress"></span>
+          <span id="play-streak" class="play-streak" hidden></span>
+          <button id="play-quit" type="button" class="btn-quit">やめる</button>
+        </div>
+
+        <div class="question-area">
+          <div class="question">
+            <span id="q-a" class="q-num"></span>
+            <span class="q-op">×</span>
+            <span id="q-b" class="q-num"></span>
+            <span class="q-op">＝</span>
+            <span id="answer-box" class="answer-box is-empty">?</span>
+          </div>
+
+          <div id="retry-panel" class="retry-panel" hidden>
+            <p id="retry-title" class="retry-title"></p>
+            <p id="retry-answer" class="retry-answer"></p>
+            <p id="retry-hint" class="retry-hint"></p>
+            <button id="btn-understood" type="button" class="btn-primary btn-big" hidden>わかった！</button>
+          </div>
+
+          <!-- ◯／× は問題の下に出す（問題の数字が かくれないように） -->
+          <div id="judge-mark" class="judge-mark" hidden></div>
+        </div>
+      </div>
+
+      <!-- 数字キーパッド（位置は ぜったいに 固定） -->
+      <div class="play-right">
+        <div id="keypad"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 結果 ═══ -->
+  <section id="screen-result" class="screen" hidden>
+    <header class="screen-head">
+      <h1>けっか</h1>
+      <span id="result-title" class="head-chip"></span>
+    </header>
+    <div class="screen-body result-body">
+      <div class="result-main">
+        <div id="result-hall" class="result-hall" hidden>👑 でんどう入り！ ぜんもん せいかい！</div>
+        <p id="result-score" class="result-score"></p>
+        <p id="result-time" class="result-time"></p>
+        <p id="result-extra" class="result-extra" hidden></p>
+      </div>
+      <div class="result-lists">
+        <div id="result-almost-box" class="result-list-box is-almost" hidden>
+          <h2>あとちょっと（せいかいだけど じかんが かかった）</h2>
+          <ul id="result-almost" class="result-list"></ul>
+        </div>
+        <div id="result-wrong-box" class="result-list-box is-wrong" hidden>
+          <h2>まちがえた もんだい</h2>
+          <ul id="result-wrong" class="result-list"></ul>
+        </div>
+      </div>
+    </div>
+    <footer class="screen-foot result-foot">
+      <button id="btn-again" type="button" class="btn-primary btn-big">もういちど</button>
+      <button id="btn-level" type="button" class="btn-ghost btn-big">レベルを えらぶ</button>
+      <button id="btn-home" type="button" class="btn-ghost btn-big">ホームに もどる</button>
+    </footer>
+  </section>
+
+  <!-- ═══ モード② 九九マス計算：レベル選択 ═══ -->
+  <section id="screen-grid-level" class="screen" hidden>
+    <header class="screen-head">
+      <button id="grid-level-back" type="button" class="btn-back">◀ もどる</button>
+      <h1>レベルを えらんでね</h1>
+      <span class="head-chip">九九マス計算</span>
+    </header>
+    <div class="screen-body">
+      <div id="grid-level-list" class="level-list"></div>
+    </div>
+  </section>
+
+  <!-- ═══ モード② 九九マス計算：プレイ ═══ -->
+  <section id="screen-grid" class="screen" hidden>
+    <div class="play-body grid-body">
+      <div class="play-left">
+        <div class="play-status">
+          <span id="grid-level-chip" class="head-chip"></span>
+          <span id="grid-time" class="watch">0:00</span>
+          <span id="grid-progress" class="play-progress"></span>
+          <button id="grid-quit" type="button" class="btn-quit">やめる</button>
+        </div>
+        <div class="grid-wrap">
+          <div id="grid-table" class="grid-table"></div>
+        </div>
+      </div>
+      <div class="play-right">
+        <div id="grid-keypad"></div>
+      </div>
+    </div>
+    <footer id="grid-foot" class="screen-foot grid-foot">
+      <p id="grid-result" class="mode-result" hidden></p>
+      <div class="grid-foot-btns">
+        <button id="grid-again" type="button" class="btn-primary">もういちど</button>
+        <button id="grid-to-level" type="button" class="btn-ghost">レベルを えらぶ</button>
+        <button id="grid-home" type="button" class="btn-ghost">ホームに もどる</button>
+      </div>
+    </footer>
+  </section>
+
+  <!-- ═══ モード③ 九九ならべ：段の選択 ═══ -->
+  <section id="screen-sort-dan" class="screen" hidden>
+    <header class="screen-head">
+      <button id="sort-dan-back" type="button" class="btn-back">◀ もどる</button>
+      <h1>だんを えらんでね</h1>
+      <span class="head-chip">九九ならべ</span>
+    </header>
+    <div class="screen-body">
+      <div id="sort-dan-list" class="dan-list"></div>
+    </div>
+  </section>
+
+  <!-- ═══ モード③ 九九ならべ：プレイ ═══ -->
+  <section id="screen-sort" class="screen" hidden>
+    <header class="screen-head">
+      <span id="sort-dan-chip" class="head-chip"></span>
+      <h1>じゅんばんに ならべてね</h1>
+      <span id="sort-time" class="watch">0:00</span>
+      <button id="sort-quit" type="button" class="btn-quit">やめる</button>
+    </header>
+    <div class="screen-body sort-body">
+      <div id="sort-slots" class="sort-slots"></div>
+      <p class="sort-hint">したの カードを タップすると じゅんに 入るよ。<br>入れた カードを タップすると もどるよ。</p>
+      <div id="sort-tray" class="sort-tray"></div>
+    </div>
+    <footer class="screen-foot sort-foot">
+      <p id="sort-result" class="mode-result" hidden></p>
+      <button id="sort-enter" type="button" class="btn-primary btn-big" disabled>けってい</button>
+      <button id="sort-again" type="button" class="btn-ghost">もういちど</button>
+      <button id="sort-to-dan" type="button" class="btn-ghost">だんを えらぶ</button>
+      <button id="sort-home" type="button" class="btn-ghost">ホームに もどる</button>
+    </footer>
+  </section>
+
+  <!-- ═══ 九九表 ═══ -->
+  <section id="screen-heatmap" class="screen" hidden>
+    <header class="screen-head">
+      <button id="heat-back" type="button" class="btn-back">◀ もどる</button>
+      <h1>九九表</h1>
+      <div class="legend">
+        <span class="legend-item" data-state="good">できた</span>
+        <span class="legend-item" data-state="almost">あとちょっと</span>
+        <span class="legend-item" data-state="weak">にがて</span>
+        <span class="legend-item" data-state="untried">みちょうせん</span>
+      </div>
+    </header>
+    <div class="screen-body heat-body">
+      <div id="heat-grid" class="heat-grid"></div>
+      <aside id="heat-detail" class="heat-detail" hidden>
+        <div class="hd-head">
+          <span id="heat-detail-title"></span>
+          <button id="heat-detail-close" type="button" class="btn-small">とじる</button>
+        </div>
+        <div id="heat-detail-body"></div>
+      </aside>
+    </div>
+    <footer class="screen-foot">
+      <p id="heat-count" class="heat-count"></p>
+    </footer>
+  </section>
+
+  <!-- ═══ せんせいメニュー ═══ -->
+  <section id="screen-teacher" class="screen" hidden>
+    <header class="screen-head">
+      <button id="teacher-close" type="button" class="btn-back">◀ もどる</button>
+      <h1>せんせいメニュー</h1>
+    </header>
+    <div class="screen-body teacher-body">
+
+      <section class="t-block">
+        <h2>制限時間</h2>
+        <div id="teacher-limits" class="chip-row"></div>
+      </section>
+
+      <section class="t-block">
+        <h2>ヒートマップのしきい値（確認のみ）</h2>
+        <ul id="teacher-threshold" class="t-list"></ul>
+      </section>
+
+      <section class="t-block" id="teacher-sheet-block" hidden>
+        <h2>スプレッドシート連携</h2>
+        <p class="t-note" id="teacher-sheet-state"></p>
+        <div class="btn-row">
+          <button id="teacher-flush" type="button" class="btn-primary">たまっている記録を今すぐ送る</button>
+          <button id="teacher-reload" type="button" class="btn-ghost">名簿を読みなおす</button>
+        </div>
+      </section>
+
+      <section class="t-block" id="teacher-csv-block">
+        <h2>記録の書き出し（CSV / Excel で開けます）</h2>
+        <div class="btn-row">
+          <button id="teacher-csv-one" type="button" class="btn-ghost">この子の記録</button>
+          <button id="teacher-csv-all" type="button" class="btn-ghost">全員分の記録</button>
+        </div>
+      </section>
+
+      <section class="t-block" id="teacher-clear-block">
+        <h2>記録の削除</h2>
+        <div class="btn-row">
+          <button id="teacher-clear-one" type="button" class="btn-danger">この子の記録を削除</button>
+          <button id="teacher-clear-all" type="button" class="btn-danger">全員分の記録を削除</button>
+        </div>
+      </section>
+
+      <section class="t-block">
+        <h2>プロフィールの管理</h2>
+        <ul id="teacher-profiles" class="t-profiles"></ul>
+        <div class="add-row" id="teacher-add-row">
+          <input id="teacher-new-name" type="text" maxlength="12" placeholder="なまえ" autocomplete="off">
+          <button id="teacher-add-profile" type="button" class="btn-primary">追加</button>
+        </div>
+      </section>
+
+      <p id="teacher-message" class="t-message" hidden></p>
+    </div>
+  </section>
+
+</main>
+
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>

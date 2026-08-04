@@ -5,7 +5,7 @@
 //   （上げないと、子どもの iPad に古い画面が残りつづける）
 // ─────────────────────────────────────────────────────────────
 
-const CACHE_VERSION = 'kuku-v2';
+const CACHE_VERSION = 'kuku-v3';
 
 // すべて相対パス。GitHub Pages のサブディレクトリ配信でもそのまま動く。
 const PRECACHE = [

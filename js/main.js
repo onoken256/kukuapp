@@ -16,6 +16,7 @@ let settings = null;      // { timeLimitSec, muted }
 let profile = null;       // いま選ばれている子
 let pendingLevel = null;  // 段選択中のレベル
 let selectedDans = [];    // 段選択中に選ばれている段
+let selectedSortMode = 'nyumon'; // 九九ならべ：えらんだモード（入門/練習）
 let currentScreen = null;
 
 const SCREEN_IDS = {
@@ -27,6 +28,7 @@ const SCREEN_IDS = {
   result: 'screen-result',
   gridLevel: 'screen-grid-level',
   grid: 'screen-grid',
+  sortMode: 'screen-sort-mode',
   sortDan: 'screen-sort-dan',
   sort: 'screen-sort',
   heatmap: 'screen-heatmap',
@@ -83,6 +85,7 @@ async function boot() {
   setupLevelScreen();
   setupDanScreen();
   setupGridLevelScreen();
+  setupSortModeScreen();
   setupSortDanScreen();
   setupResultButtons();
   setupHeatmapScreen();
@@ -142,7 +145,7 @@ function setupHome() {
 
   $('home-start').addEventListener('click', () => showScreen('level'));
   $('home-grid').addEventListener('click', () => showScreen('gridLevel'));
-  $('home-sort').addEventListener('click', () => showScreen('sortDan'));
+  $('home-sort').addEventListener('click', () => showScreen('sortMode'));
 
   $('home-heatmap').addEventListener('click', async () => {
     await refreshHeatmap(profile.id);
@@ -275,6 +278,22 @@ function setupGridLevelScreen() {
   $('grid-level-back').addEventListener('click', () => goHome());
 }
 
+// ── モード③ 九九ならべ：モードの選択 ────────────────────────
+
+const SORT_MODE_LABEL = { nyumon: 'にゅうもん', renshu: 'れんしゅう' };
+
+function setupSortModeScreen() {
+  const box = $('sort-mode-list');
+  box.querySelectorAll('.level-card').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      selectedSortMode = btn.dataset.mode;
+      $('sort-dan-mode-chip').textContent = `九九ならべ・${SORT_MODE_LABEL[selectedSortMode]}`;
+      showScreen('sortDan');
+    });
+  });
+  $('sort-mode-back').addEventListener('click', () => goHome());
+}
+
 // ── モード③ 九九ならべ：段の選択 ──────────────────────────
 
 function setupSortDanScreen() {
@@ -285,10 +304,10 @@ function setupSortDanScreen() {
     btn.type = 'button';
     btn.className = 'dan-btn';
     btn.innerHTML = `<span class="dan-num">${d}</span><span class="dan-unit">の だん</span>`;
-    btn.addEventListener('click', () => startSort({ dan: d, profileId: profile.id }));
+    btn.addEventListener('click', () => startSort({ dan: d, profileId: profile.id, mode: selectedSortMode }));
     box.appendChild(btn);
   }
-  $('sort-dan-back').addEventListener('click', () => goHome());
+  $('sort-dan-back').addEventListener('click', () => showScreen('sortMode'));
 }
 
 // ── 結果画面のボタン ────────────────────────────────────────

@@ -228,12 +228,35 @@
     </footer>
   </section>
 
+  <!-- ═══ モード③ 九九ならべ：モードの選択 ═══ -->
+  <section id="screen-sort-mode" class="screen" hidden>
+    <header class="screen-head">
+      <button id="sort-mode-back" type="button" class="btn-back">◀ もどる</button>
+      <h1>モードを えらんでね</h1>
+      <span class="head-chip">九九ならべ</span>
+    </header>
+    <div class="screen-body">
+      <div id="sort-mode-list" class="level-list">
+        <button type="button" class="level-card" data-mode="nyumon">
+          <span class="lv-label">にゅうもん</span>
+          <span class="lv-title">じゅんばんに ならべよう！</span>
+          <span class="lv-desc">カードは なんかいも つかえるよ</span>
+        </button>
+        <button type="button" class="level-card" data-mode="renshu">
+          <span class="lv-label">れんしゅう</span>
+          <span class="lv-title">よく見て ならべよう！</span>
+          <span class="lv-desc">にた数字の カードも まざっているよ</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
   <!-- ═══ モード③ 九九ならべ：段の選択 ═══ -->
   <section id="screen-sort-dan" class="screen" hidden>
     <header class="screen-head">
       <button id="sort-dan-back" type="button" class="btn-back">◀ もどる</button>
       <h1>だんを えらんでね</h1>
-      <span class="head-chip">九九ならべ</span>
+      <span id="sort-dan-mode-chip" class="head-chip">九九ならべ</span>
     </header>
     <div class="screen-body">
       <div id="sort-dan-list" class="dan-list"></div>
